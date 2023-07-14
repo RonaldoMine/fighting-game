@@ -13,19 +13,25 @@ const GAME_MOVE_KEYS = {
       value: "z",
       pressed: false,
     },
+    attact: {
+      value: " ",
+    },
   },
   enemy: {
     left: {
-      value: "ArrowLeft",
+      value: "arrowleft",
       pressed: false,
     },
     right: {
-      value: "ArrowRight",
+      value: "arrowright",
       pressed: false,
     },
     top: {
-      value: "ArrowUp",
+      value: "arrowup",
       pressed: false,
+    },
+    attact: {
+      value: "shift",
     },
   },
 }; // Alls the keys actions to manage player
@@ -43,21 +49,49 @@ c.fillRect(0, 0, canvas.width, canvas.height); // Create a area fo drawing in ca
 
 // Create a class that represent a player or primarily a rectangle
 class Player {
-  constructor({ position, velocity }) {
+  constructor({ position, velocity, color = "red", offset }) {
     this.position = position; //Initialize a position of player
     this.velocity = velocity; //Initialize a velocity of player(how player move)
     this.height = 150; //Initialize a height of a player
-    this.lastKeyPressed;
+    this.width = 50; //Initialize a width of a player
+    this.lastKeyPressed; // to store a last key pressed by a user
+    this.attackBox = {
+      position: {
+        x: this.position.x,
+        y: this.position.y,
+      },
+      offset: offset,
+      with: 100,
+      height: 50,
+    }; // Attact area
+    this.color = color;
+    this.isAttacking = false;
   }
 
   //What player look like (draw a player)
   draw() {
-    c.fillStyle = "red";
-    c.fillRect(this.position.x, this.position.y, 50, this.height);
+    //Player
+    c.fillStyle = this.color;
+    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+
+    //Attack
+    if (this.isAttacking) {
+      c.fillStyle = "green";
+      c.fillRect(
+        this.attackBox.position.x,
+        this.attackBox.position.y,
+        this.attackBox.with,
+        this.attackBox.height
+      );
+    }
   }
 
+  //Update player
   update() {
     this.draw(); //Draw the player
+    this.attackBox.position.x = this.position.x - this.attackBox.offset.x; // Increase a x position of player with the horizontal velocity
+    this.attackBox.position.y = this.position.y; // Increase a x position of player with the horizontal velocity
+
     this.position.x += this.velocity.x; // Increase a x position of player with the horizontal velocity
     this.position.y += this.velocity.y; // Increase a y position of player with the vertical velocity
     //check if the player touch a bottom of canvas
@@ -67,6 +101,11 @@ class Player {
       //Add a gravity effect to v elocity of a player
       this.velocity.y += GRAVITY_VALUE;
     }
+  }
+
+  attack() {
+    this.isAttacking = true;
+    setTimeout(() => (this.isAttacking = false), 100);
   }
 }
 
@@ -79,6 +118,10 @@ const actor = new Player({
     x: 0,
     y: 0,
   },
+  offset: {
+    x: 0,
+    y: 0,
+  },
 });
 
 const enemy = new Player({
@@ -88,6 +131,11 @@ const enemy = new Player({
   },
   velocity: {
     x: 0,
+    y: 0,
+  },
+  color: "blue",
+  offset: {
+    x: 50,
     y: 0,
   },
 });
@@ -124,6 +172,20 @@ function updateEnemyMovement(player) {
   }
 }
 
+function rectangularCollision({ reactangular1, rectangular2 }) {
+  return (
+    reactangular1.position.x + reactangular1.attackBox.with >=
+      rectangular2.position.x &&
+    rectangular2.position.x + rectangular2.attackBox.with >=
+      reactangular1.position.x &&
+    reactangular1.attackBox.position.y + reactangular1.attackBox.height >=
+      rectangular2.position.y &&
+    rectangular2.attackBox.position.y + rectangular2.attackBox.height >=
+      reactangular1.position.y
+  );
+}
+
+//Infinity loop function
 function animate() {
   window.requestAnimationFrame(animate);
   c.fillStyle = "black"; // Set a background in black before
@@ -134,30 +196,45 @@ function animate() {
   //Actor movement
   updateActorMovement(actor);
   updateEnemyMovement(enemy);
+
+  //Detect collision
+  if (
+    rectangularCollision({ reactangular1: actor, rectangular2: enemy }) &&
+    actor.isAttacking
+  ) {
+    actor.isAttacking = false;
+    console.log("Actor attack");
+  }
+  if (
+    rectangularCollision({ reactangular1: enemy, rectangular2: actor }) &&
+    enemy.isAttacking
+  ) {
+    enemy.isAttacking = false;
+    console.log("Enemy attack");
+  }
 }
 
 animate();
 
 // Move player
 window.addEventListener("keydown", function (e) {
-  //Actor Keys
   switch (e.key.toLowerCase()) {
+    //Actor Keys
     case GAME_MOVE_KEYS.actor.left.value:
-      //actor.velocity.x = -HORIZONTAL_VELOCITY_PLAYER_MOVEMENT_VALUE; //Move left
       actor.lastKeyPressed = GAME_MOVE_KEYS.actor.left.value;
       GAME_MOVE_KEYS.actor.left.pressed = true;
       break;
     case GAME_MOVE_KEYS.actor.right.value:
-      //actor.velocity.x = HORIZONTAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // Move right
       actor.lastKeyPressed = GAME_MOVE_KEYS.actor.right.value;
       GAME_MOVE_KEYS.actor.right.pressed = true;
       break;
     case GAME_MOVE_KEYS.actor.top.value:
       actor.velocity.y = -VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // reduce a velocity and left a gravity make a effect
       break;
-  }
-  //Enemy Keys
-  switch (e.key) {
+    case GAME_MOVE_KEYS.actor.attact.value:
+      actor.attack();
+      break;
+    //Enemy Keys
     case GAME_MOVE_KEYS.enemy.left.value:
       enemy.lastKeyPressed = GAME_MOVE_KEYS.enemy.left.value;
       GAME_MOVE_KEYS.enemy.left.pressed = true;
@@ -168,6 +245,9 @@ window.addEventListener("keydown", function (e) {
       break;
     case GAME_MOVE_KEYS.enemy.top.value:
       enemy.velocity.y = -VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // reduce a velocity and left a gravity make a effect
+      break;
+    case GAME_MOVE_KEYS.enemy.attact.value:
+      enemy.attack();
       break;
   }
 });
@@ -182,9 +262,7 @@ window.addEventListener("keyup", function (e) {
     case GAME_MOVE_KEYS.actor.right.value:
       GAME_MOVE_KEYS.actor.right.pressed = false;
       break;
-  }
-  //Enemy Keys
-  switch (e.key) {
+    //Enemy Keys
     case GAME_MOVE_KEYS.enemy.left.value:
       enemy.velocity.x = 0;
       GAME_MOVE_KEYS.enemy.left.pressed = false;
