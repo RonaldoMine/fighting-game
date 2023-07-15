@@ -66,6 +66,7 @@ class Player {
     }; // Attact area
     this.color = color;
     this.isAttacking = false;
+    this.health = 100;
   }
 
   //What player look like (draw a player)
@@ -203,14 +204,24 @@ function animate() {
     actor.isAttacking
   ) {
     actor.isAttacking = false;
-    console.log("Actor attack");
+    enemy.health -= 10;
+    document.getElementById("enemyHealth").style.width = `${enemy.health}%`;
+    if (enemy.health <= 0) {
+      alert("Actor wins");
+      enemy.health = 0;
+    }
   }
   if (
     rectangularCollision({ reactangular1: enemy, rectangular2: actor }) &&
     enemy.isAttacking
   ) {
     enemy.isAttacking = false;
-    console.log("Enemy attack");
+    actor.health -= 10;
+    document.getElementById("actorHealth").style.width = `${actor.health}%`;
+    if (actor.health <= 0) {
+      alert("Enemy wins");
+      actor.health = 0;
+    }
   }
 }
 

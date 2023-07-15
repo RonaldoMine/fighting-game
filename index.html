@@ -4,9 +4,81 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Game</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+    </style>
   </head>
   <body>
-    <canvas></canvas>
+    <!-- Game scne -->
+    <div style="position: relative; display: inline-block">
+      <!-- Health Bar -->
+      <div
+        style="
+          position: absolute;
+          display: flex;
+          width: 100%;
+          align-items: center;
+          padding: 20px;
+        "
+      >
+        <!-- Actor HealthBar -->
+        <div
+          style="
+            background-color: yellow;
+            position: relative;
+            height: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+          "
+        >
+        <!-- Actor Health Status -->
+          <div
+            style="
+              height: 30px;
+              width: 100%;
+              position: absolute;
+              background-color: green;
+            "
+            id="actorHealth"
+          ></div>
+        </div>
+        <!-- Time -->
+        <div
+          style="
+            background-color: red;
+            height: 100px;
+            width: 100px;
+            flex-shrink: 0;
+          "
+        ></div>
+        <!-- Enemy HealthBar -->
+        <div
+          style="
+            background-color: yellow;
+            height: 30px;
+            width: 100%;
+            position: relative;
+          "
+        >
+          <!-- Enemy Health Status -->
+          <div
+            style="
+              height: 30px;
+              width: 100%;
+              position: absolute;
+              background-color: green;
+            "
+            id="enemyHealth"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Game Area -->
+      <canvas></canvas>
+    </div>
     <script src="index.js"></script>
   </body>
 </html>
