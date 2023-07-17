@@ -38,6 +38,12 @@ const GAME_MOVE_KEYS = {
 const HORIZONTAL_VELOCITY_PLAYER_MOVEMENT_VALUE = 5; // a velocity or speed horizontal movement of a player
 const VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE = 20; // a velocity or speed vertical movement of a player
 
+const GAME_STATE = {
+  interval: null,
+  timer: 10,
+  game_over: false,
+};
+
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 
@@ -186,6 +192,30 @@ function rectangularCollision({ reactangular1, rectangular2 }) {
   );
 }
 
+function gameTimers() {
+  GAME_STATE.interval = setInterval(() => {
+    GAME_STATE.timer -= 1;
+    document.getElementById("timer").innerText =
+      GAME_STATE.timer > 9 ? GAME_STATE.timer : `0${GAME_STATE.timer}`;
+    if (GAME_STATE.timer == 0 || GAME_STATE.game_over) {
+      stopGame();
+    }
+  }, 1000);
+}
+
+function stopGame() {
+  GAME_STATE.game_over = true;
+  clearInterval(GAME_STATE.interval);
+  document.getElementById("alert").style.display = "block";
+  if (actor.health === enemy.health) {
+    document.getElementById("alert").innerHTML = "Equality";
+  } else {
+    document.getElementById("alert").innerHTML = `${
+      actor.health > enemy.health ? "Actor wins" : "Enemy wins"
+    }`;
+  }
+}
+
 //Infinity loop function
 function animate() {
   window.requestAnimationFrame(animate);
@@ -204,11 +234,13 @@ function animate() {
     actor.isAttacking
   ) {
     actor.isAttacking = false;
-    enemy.health -= 10;
-    document.getElementById("enemyHealth").style.width = `${enemy.health}%`;
-    if (enemy.health <= 0) {
-      alert("Actor wins");
-      enemy.health = 0;
+    if (!GAME_STATE.game_over) {
+      enemy.health -= 10;
+      document.getElementById("enemyHealth").style.width = `${enemy.health}%`;
+      if (enemy.health <= 0) {
+        stopGame();
+        enemy.health = 0;
+      }
     }
   }
   if (
@@ -216,71 +248,78 @@ function animate() {
     enemy.isAttacking
   ) {
     enemy.isAttacking = false;
-    actor.health -= 10;
-    document.getElementById("actorHealth").style.width = `${actor.health}%`;
-    if (actor.health <= 0) {
-      alert("Enemy wins");
-      actor.health = 0;
+    if (!GAME_STATE.game_over) {
+      actor.health -= 10;
+      document.getElementById("actorHealth").style.width = `${actor.health}%`;
+      if (actor.health <= 0) {
+        stopGame();
+        actor.health = 0;
+      }
     }
   }
 }
 
 animate();
+gameTimers();
 
 // Move player
 window.addEventListener("keydown", function (e) {
-  switch (e.key.toLowerCase()) {
-    //Actor Keys
-    case GAME_MOVE_KEYS.actor.left.value:
-      actor.lastKeyPressed = GAME_MOVE_KEYS.actor.left.value;
-      GAME_MOVE_KEYS.actor.left.pressed = true;
-      break;
-    case GAME_MOVE_KEYS.actor.right.value:
-      actor.lastKeyPressed = GAME_MOVE_KEYS.actor.right.value;
-      GAME_MOVE_KEYS.actor.right.pressed = true;
-      break;
-    case GAME_MOVE_KEYS.actor.top.value:
-      actor.velocity.y = -VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // reduce a velocity and left a gravity make a effect
-      break;
-    case GAME_MOVE_KEYS.actor.attact.value:
-      actor.attack();
-      break;
-    //Enemy Keys
-    case GAME_MOVE_KEYS.enemy.left.value:
-      enemy.lastKeyPressed = GAME_MOVE_KEYS.enemy.left.value;
-      GAME_MOVE_KEYS.enemy.left.pressed = true;
-      break;
-    case GAME_MOVE_KEYS.enemy.right.value:
-      enemy.lastKeyPressed = GAME_MOVE_KEYS.enemy.right.value;
-      GAME_MOVE_KEYS.enemy.right.pressed = true;
-      break;
-    case GAME_MOVE_KEYS.enemy.top.value:
-      enemy.velocity.y = -VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // reduce a velocity and left a gravity make a effect
-      break;
-    case GAME_MOVE_KEYS.enemy.attact.value:
-      enemy.attack();
-      break;
+  if (!GAME_STATE.game_over) {
+    switch (e.key.toLowerCase()) {
+      //Actor Keys
+      case GAME_MOVE_KEYS.actor.left.value:
+        actor.lastKeyPressed = GAME_MOVE_KEYS.actor.left.value;
+        GAME_MOVE_KEYS.actor.left.pressed = true;
+        break;
+      case GAME_MOVE_KEYS.actor.right.value:
+        actor.lastKeyPressed = GAME_MOVE_KEYS.actor.right.value;
+        GAME_MOVE_KEYS.actor.right.pressed = true;
+        break;
+      case GAME_MOVE_KEYS.actor.top.value:
+        actor.velocity.y = -VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // reduce a velocity and left a gravity make a effect
+        break;
+      case GAME_MOVE_KEYS.actor.attact.value:
+        actor.attack();
+        break;
+      //Enemy Keys
+      case GAME_MOVE_KEYS.enemy.left.value:
+        enemy.lastKeyPressed = GAME_MOVE_KEYS.enemy.left.value;
+        GAME_MOVE_KEYS.enemy.left.pressed = true;
+        break;
+      case GAME_MOVE_KEYS.enemy.right.value:
+        enemy.lastKeyPressed = GAME_MOVE_KEYS.enemy.right.value;
+        GAME_MOVE_KEYS.enemy.right.pressed = true;
+        break;
+      case GAME_MOVE_KEYS.enemy.top.value:
+        enemy.velocity.y = -VERTICAL_VELOCITY_PLAYER_MOVEMENT_VALUE; // reduce a velocity and left a gravity make a effect
+        break;
+      case GAME_MOVE_KEYS.enemy.attact.value:
+        enemy.attack();
+        break;
+    }
   }
 });
 
 //Stop a player's movement
 window.addEventListener("keyup", function (e) {
   //Actor Keys
-  switch (e.key.toLowerCase()) {
-    case GAME_MOVE_KEYS.actor.left.value:
-      GAME_MOVE_KEYS.actor.left.pressed = false;
-      break;
-    case GAME_MOVE_KEYS.actor.right.value:
-      GAME_MOVE_KEYS.actor.right.pressed = false;
-      break;
-    //Enemy Keys
-    case GAME_MOVE_KEYS.enemy.left.value:
-      enemy.velocity.x = 0;
-      GAME_MOVE_KEYS.enemy.left.pressed = false;
-      break;
-    case GAME_MOVE_KEYS.enemy.right.value:
-      enemy.velocity.x = 0;
-      GAME_MOVE_KEYS.enemy.right.pressed = false;
-      break;
+  if (!GAME_STATE.game_over) {
+    switch (e.key.toLowerCase()) {
+      case GAME_MOVE_KEYS.actor.left.value:
+        GAME_MOVE_KEYS.actor.left.pressed = false;
+        break;
+      case GAME_MOVE_KEYS.actor.right.value:
+        GAME_MOVE_KEYS.actor.right.pressed = false;
+        break;
+      //Enemy Keys
+      case GAME_MOVE_KEYS.enemy.left.value:
+        enemy.velocity.x = 0;
+        GAME_MOVE_KEYS.enemy.left.pressed = false;
+        break;
+      case GAME_MOVE_KEYS.enemy.right.value:
+        enemy.velocity.x = 0;
+        GAME_MOVE_KEYS.enemy.right.pressed = false;
+        break;
+    }
   }
 });
