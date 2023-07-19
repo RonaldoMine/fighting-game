@@ -43,3 +43,22 @@ const GAME_STATE = {
   timer: 60,
   game_over: false,
 }; // Game life cycle
+
+const CANVAS_BOTTOM_ESPACE = 200;
+
+const DIRECTIONS = {
+  left: "LEFT",
+  right: "RIGHT",
+};
+
+const PLAYER_STATE = {
+  idle: "idle",
+  run: "run",
+  jump: "jump",
+  fall: "fall",
+  attact1: "attack1",
+  takeHit: "takeHit",
+  death: "death",
+};
+
+const TAKE_HIT_VALUE = 20;

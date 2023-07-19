@@ -9,11 +9,21 @@ c.fillRect(0, 0, canvas.width, canvas.height); // Create a area fo drawing in ca
 
 const background = new Asset({
   position: {
-    x:0,
-    y:0 
+    x: 0,
+    y: 0,
   },
-  src: "./img/background.png"
-})
+  imageSrc: "./img/background.png",
+});
+
+const shop = new Asset({
+  position: {
+    x: 600,
+    y: 128,
+  },
+  imageSrc: "./img/shop.png",
+  scale: 2.75,
+  framesMax: 6,
+});
 
 const actor = new Player({
   position: {
@@ -25,14 +35,55 @@ const actor = new Player({
     y: 0,
   },
   offset: {
-    x: 0,
-    y: 0,
+    x: 215,
+    y: 157,
+  },
+  imageSrc: "./img/samuraiMack/Idle.png",
+  framesMax: 8,
+  scale: 2.5,
+  sprites: {
+    idle: {
+      imageSrc: "./img/samuraiMack/Idle.png",
+      framesMax: 8,
+    },
+    run: {
+      imageSrc: "./img/samuraiMack/Run.png",
+      framesMax: 8,
+    },
+    jump: {
+      imageSrc: "./img/samuraiMack/Jump.png",
+      framesMax: 2,
+    },
+    fall: {
+      imageSrc: "./img/samuraiMack/Fall.png",
+      framesMax: 2,
+    },
+    attack1: {
+      imageSrc: "./img/samuraiMack/Attack1.png",
+      framesMax: 6,
+    },
+    takeHit: {
+      imageSrc: "./img/samuraiMack/Take Hit - white silhouette.png",
+      framesMax: 4,
+    },
+    death: {
+      imageSrc: "./img/samuraiMack/Death.png",
+      framesMax: 6,
+    },
+  },
+  attackBox: {
+    offset: {
+      x: 100,
+      y: 50,
+    },
+    width: 160,
+    height: 50,
   },
 });
 
 const enemy = new Player({
   position: {
-    x: 400,
+    x: 500,
     y: 100,
   },
   velocity: {
@@ -41,8 +92,49 @@ const enemy = new Player({
   },
   color: "blue",
   offset: {
-    x: 50,
-    y: 0,
+    x: 215,
+    y: 170,
+  },
+  imageSrc: "./img/kenji/Idle.png",
+  framesMax: 4,
+  scale: 2.5,
+  sprites: {
+    idle: {
+      imageSrc: "./img/kenji/Idle.png",
+      framesMax: 4,
+    },
+    run: {
+      imageSrc: "./img/kenji/Run.png",
+      framesMax: 8,
+    },
+    jump: {
+      imageSrc: "./img/kenji/Jump.png",
+      framesMax: 2,
+    },
+    fall: {
+      imageSrc: "./img/kenji/Fall.png",
+      framesMax: 2,
+    },
+    attack1: {
+      imageSrc: "./img/kenji/Attack1.png",
+      framesMax: 4,
+    },
+    takeHit: {
+      imageSrc: "./img/kenji/Take Hit.png",
+      framesMax: 3,
+    },
+    death: {
+      imageSrc: "./img/kenji/Death.png",
+      framesMax: 7,
+    },
+  },
+  attackBox: {
+    offset: {
+      x: -172,
+      y: 50,
+    },
+    width: 170,
+    height: 50,
   },
 });
 
@@ -50,43 +142,57 @@ const enemy = new Player({
 function animate() {
   window.requestAnimationFrame(animate);
   c.fillStyle = "black"; // Set a background in black before
-  c.fillRect(0, 0, canvas.width, canvas.height); // Create a empty rect with the same width and with of the initial canvas
+  c.fillRect(0, 0, canvas.width, canvas.height); // Create a empty rect width the same width and width of the initial canvas
+  c.fillStyle = "rgba(255,255,255, 0.15)";
   background.draw();
+  shop.update();
+  c.fillRect(0, 0, canvas.width, canvas.height);
   actor.update();
   enemy.update();
 
   //Actor movement
+  //Vertical
   updateActorMovement(actor);
   updateEnemyMovement(enemy);
 
-  //Detect collision
+  //Detect if actor attemp to attack enemy
   if (
-    rectangularCollision({ reactangular1: actor, rectangular2: enemy }) &&
-    actor.isAttacking
+    playerCollision({ player1: actor, player2: enemy }) &&
+    actor.isAttacking &&
+    actor.framesCurrent === 4
   ) {
     actor.isAttacking = false;
     if (!GAME_STATE.game_over) {
-      enemy.health -= 10;
-      document.getElementById("enemyHealth").style.width = `${enemy.health}%`;
-      if (enemy.health <= 0) {
-        stopGame();
-        enemy.health = 0;
-      }
+      enemy.takeHit();
+      gsap.to("#enemyHealth", {
+        width: `${enemy.health}%`,
+      });
     }
   }
+
+  //Check if actor lose there attack
+  if (actor.isAttacking && actor.framesCurrent === 4) {
+    actor.isAttacking = false;
+  }
+
+  //Detect if actor attemp to attack enemy
   if (
-    rectangularCollision({ reactangular1: enemy, rectangular2: actor }) &&
-    enemy.isAttacking
+    playerCollision({ player1: enemy, player2: actor }) &&
+    enemy.isAttacking &&
+    enemy.framesCurrent === 2
   ) {
     enemy.isAttacking = false;
     if (!GAME_STATE.game_over) {
-      actor.health -= 10;
-      document.getElementById("actorHealth").style.width = `${actor.health}%`;
-      if (actor.health <= 0) {
-        stopGame();
-        actor.health = 0;
-      }
+      actor.takeHit();
+      gsap.to("#actorHealth", {
+        width: `${actor.health}%`,
+      });
     }
+  }
+
+  //Check if player lose there attack
+  if (enemy.isAttacking && enemy.framesCurrent === 2) {
+    enemy.isAttacking = false;
   }
 }
 
@@ -134,8 +240,8 @@ window.addEventListener("keydown", function (e) {
 //Stop a player's movement
 window.addEventListener("keyup", function (e) {
   if (!GAME_STATE.game_over) {
-    //Actor Keys
     switch (e.key.toLowerCase()) {
+      //Actor Keys
       case GAME_MOVE_KEYS.actor.left.value:
         GAME_MOVE_KEYS.actor.left.pressed = false;
         break;
