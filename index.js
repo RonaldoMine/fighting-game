@@ -142,7 +142,7 @@ const enemy = new Player({
 function animate() {
   window.requestAnimationFrame(animate);
   c.fillStyle = "black"; // Set a background in black before
-  c.fillRect(0, 0, canvas.width, canvas.height); // Create a empty rect width the same width and width of the initial canvas
+  c.fillRect(0, 0, canvas.width, canvas.height); // Create a empty rect with the same width and height of the initial canvas
   c.fillStyle = "rgba(255,255,255, 0.15)";
   background.draw();
   shop.update();
