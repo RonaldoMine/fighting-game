@@ -2,8 +2,8 @@ const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 
 canvas.width = 1024; // Defined a width to a canvas
-canvas.height = 576; // Defined a heigth to a canvas
-//thoses values is used to ensure that the canvas fit for most screen sizes
+canvas.height = 576; // Defined a height for a canvas
+//Those values are used to ensure that the canvas fits most screen sizes
 
 c.fillRect(0, 0, canvas.width, canvas.height); // Create a area fo drawing in canvas
 
@@ -142,7 +142,7 @@ const enemy = new Player({
 function animate() {
   window.requestAnimationFrame(animate);
   c.fillStyle = "black"; // Set a background in black before
-  c.fillRect(0, 0, canvas.width, canvas.height); // Create a empty rect with the same width and height of the initial canvas
+  c.fillRect(0, 0, canvas.width, canvas.height); // Create an empty rect with the same width and height as the initial canvas
   c.fillStyle = "rgba(255,255,255, 0.15)";
   background.draw();
   shop.update();
@@ -155,7 +155,7 @@ function animate() {
   updateActorMovement(actor);
   updateEnemyMovement(enemy);
 
-  //Detect if actor attemp to attack enemy
+  //Detect if actor attempts to attack enemy
   if (
     playerCollision({ player1: actor, player2: enemy }) &&
     actor.isAttacking &&
@@ -170,12 +170,12 @@ function animate() {
     }
   }
 
-  //Check if actor lose there attack
+  //Check if actor loses their attack
   if (actor.isAttacking && actor.framesCurrent === 4) {
     actor.isAttacking = false;
   }
 
-  //Detect if actor attemp to attack enemy
+  //Detect if actor attempts to attack enemy
   if (
     playerCollision({ player1: enemy, player2: actor }) &&
     enemy.isAttacking &&
@@ -190,7 +190,7 @@ function animate() {
     }
   }
 
-  //Check if player lose there attack
+  //Check if player loses their attack
   if (enemy.isAttacking && enemy.framesCurrent === 2) {
     enemy.isAttacking = false;
   }
